@@ -1,0 +1,41 @@
+# Name of the pipeline
+name: calculator-pl
+
+# What event is going to activate the pipeline
+on:
+  push:
+    branches:
+      - master  
+  
+# Here we define the tasks that we need github does when the event is activated.
+jobs:
+  deploying:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Run tests
+        run: ls
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11.5
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run tests
+        run: |
+          pytest
+
+      - name: Build docker image
+        run: docker build -t simpleapp:1.0 --no-cache .
+
+      - name: Deploy app
+        run: docker run -d -p 6060:5050 --name simpleapp impleapp:1.0
+        #run: nohup python app.py > app.log 2>&1 &
+        #run: python app.py > app.log 2>&1 &
