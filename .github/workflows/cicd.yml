@@ -42,6 +42,8 @@ jobs:
         run: docker build -t simpleapp:1.0 --no-cache .
 
       - name: Deploy app
+        env:
+          PORT: 5050
         run: |
           docker run -d -p ${{env.PORT}}:5050 --name simpleapp simpleapp:1.0
           
