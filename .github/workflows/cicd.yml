@@ -13,7 +13,7 @@ jobs:
     runs-on: self-hosted
     environment:
       name: ${{ 
-        github.ref == 'refs/heads/main' && 'production' ||
+        github.ref == 'refs/heads/master' && 'production' ||
         github.ref == 'refs/heads/develop' && 'develop' ||
         startsWith(github.ref, 'refs/heads/release/') && 'release'
         }}
