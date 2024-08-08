@@ -36,6 +36,6 @@ jobs:
         run: docker build -t simpleapp:1.0 --no-cache .
 
       - name: Deploy app
-        run: docker run -d -p 6060:5050 --name simpleapp impleapp:1.0
+        run: docker run -d -p 6060:5050 --name simpleapp simpleapp:1.0
         #run: nohup python app.py > app.log 2>&1 &
         #run: python app.py > app.log 2>&1 &
