@@ -1,7 +1,7 @@
 # Name of the pipeline
 name: calculator-pl
 
-# What event is going to activate the pipeline
+# What event is going to activate the pipeline.
 on:
   push:
     branches:
