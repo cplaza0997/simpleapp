@@ -11,7 +11,7 @@ class SumRequest(BaseModel):
 def sum_ab(a,b):
     return a+b
 
-@router.post("/sum")
+@router.post("/arit")
 def operations(request: SumRequest):
     result=0
     if request.o=='+':
