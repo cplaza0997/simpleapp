@@ -9,20 +9,12 @@ on:
   
 # Here we define the tasks that we need github does when the event is activated.
 jobs:
-  deploying:
+  # Job para la fase de CI: Construcción y pruebas
+  build_and_test:
     runs-on: self-hosted
-    environment:
-      name: ${{ 
-        github.ref == 'refs/heads/master' && 'production' ||
-        github.ref == 'refs/heads/develop' && 'develop' ||
-        startsWith(github.ref, 'refs/heads/release/') && 'release'
-        }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-
-      - name: Run tests
-        run: ls -l
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -38,13 +30,54 @@ jobs:
         run: |
           pytest
 
+  # Job para la fase de CD: Construcción de la imagen Docker
+  build_docker_image:
+    runs-on: self-hosted
+    needs: build_and_test
+    steps:
+      #- name: Checkout code
+      #  uses: actions/checkout@v3
+      - name: Get last commit hash and set as env var
+        run: echo "VERSION_GIT=$(git rev-parse HEAD)" >> $GITHUB_ENV
+
       - name: Build docker image
-        run: docker build -t simpleapp:1.0 --no-cache .
+        run: docker build -t simpleapp:${{ env.VERSION_GIT }} --no-cache .
+
+  # Job para la fase de CD: Despliegue de la aplicación
+  deploy_app:
+    runs-on: self-hosted
+    needs: build_docker_image
+    environment:
+      name: ${{ 
+        github.ref == 'refs/heads/master' && 'production' ||
+        github.ref == 'refs/heads/develop' && 'develop' ||
+        startsWith(github.ref, 'refs/heads/release/') && 'release'
+        }}
+    
+    steps:
+      - name: Remove previous existing container
+        run: |
+          docker ps -a --filter "name=simpleapp-" -q | xargs -r docker rm -f
 
       - name: Deploy app
         run: |
-          docker run -d -p ${{vars.PORT}}:5050 --name simpleapp simpleapp:1.0
-          
+          docker run -d -p ${{vars.PORT}}:5050 --name simpleapp simpleapp:${{ env.VERSION_GIT }}
+
+  # Job para la fase de CD: Verificación de salud de la aplicación
+  health_check:
+    runs-on: self-hosted
+    needs: deploy_app
+    steps:
+      - name: Health check
+        run: |
+          response=$(curl --silent --write-out "%{http_code}" http://localhost:${{vars.PORT}}/health)
+          if [ "$response" -ne 200 ]; then
+            echo "Health check failed with status code $response"
+            exit 1
+          fi
 
         #run: nohup python app.py > app.log 2>&1 &
         #run: python app.py > app.log 2>&1 &
+
+
+        
