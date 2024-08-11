@@ -34,14 +34,17 @@ jobs:
   build_docker_image:
     runs-on: self-hosted
     needs: build_and_test
+    outputs:
+      version_git: ${{ steps.commit_hash_id.outputs.commit_hash }}
     steps:
       #- name: Checkout code
       #  uses: actions/checkout@v3
-      - name: Get last commit hash and set as env var
-        run: echo "VERSION_GIT=$(git rev-parse HEAD)" >> $GITHUB_ENV
+      - name: Get last commit hash and set as output
+        id: commit_hash_id
+        run: echo "::set-output name=commit_hash::$(git rev-parse HEAD)"
 
       - name: Build docker image
-        run: docker build -t simpleapp:${{ env.VERSION_GIT }} --no-cache .
+        run: docker build -t simpleapp:${{ steps.commit_hash_id.outputs.commit_hash }} --no-cache .
 
   # Job para la fase de CD: Despliegue de la aplicación
   deploy_app:
@@ -61,7 +64,7 @@ jobs:
 
       - name: Deploy app
         run: |
-          docker run -d -p ${{vars.PORT}}:5050 --name simpleapp simpleapp:${{ env.VERSION_GIT }}
+          docker run -d -p ${{vars.PORT}}:5050 --name simpleapp simpleapp:${{ needs.build_docker_image.outputs.version_git }}
 
   # Job para la fase de CD: Verificación de salud de la aplicación
   health_check:
