@@ -3,9 +3,16 @@ name: calculator-pl
 
 # What event is going to activate the pipeline.
 on:
+  pull_request:
+    branches:
+      - master
+      - develop
+      - release
   push:
     branches:
-      - master  
+      - master
+      - develop
+      - release  
   
 # Here we define the tasks that we need github does when the event is activated.
 jobs:
