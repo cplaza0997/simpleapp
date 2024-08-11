@@ -60,7 +60,7 @@ jobs:
     steps:
       - name: Remove previous existing container
         run: |
-          docker ps -a --filter "name=simpleapp-" -q | xargs -r docker rm -f
+          docker ps -a --filter "name=simpleapp" -q | xargs -r docker rm -f
 
       - name: Deploy app
         run: |
