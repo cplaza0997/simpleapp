@@ -3,11 +3,11 @@ name: calculator-pl
 
 # What event is going to activate the pipeline.
 on:
-  pull_request:
-    branches:
-      - master
-      - develop
-      - release
+  #pull_request:
+  #  branches:
+  #    - master
+  #    - develop
+  #    - release
   push:
     branches:
       - master
