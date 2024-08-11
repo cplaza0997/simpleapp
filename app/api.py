@@ -16,7 +16,7 @@ def operations(request: SumRequest):
     result=0
     if request.o=='+':
         result=sum_ab(request.a,request.b)
-    return {"result": result}
+    return {"resultado": result}
 
 @router.get("/health")
 def health_check():
