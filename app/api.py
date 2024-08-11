@@ -4,12 +4,19 @@ from pydantic import BaseModel
 router = APIRouter()
 
 class SumRequest(BaseModel):
+    o: str
     a: float
     b: float
 
+def sum_ab(a,b):
+    return a+b
+
 @router.post("/sum")
-def sum_numbers(request: SumRequest):
-    return {"result": request.a + request.b}
+def operations(request: SumRequest):
+    result=0
+    if request.o=='+':
+        result=sum_ab(request.a,request.b)
+    return {"result": result}
 
 @router.get("/health")
 def health_check():
