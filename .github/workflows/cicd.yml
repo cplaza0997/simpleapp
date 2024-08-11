@@ -90,7 +90,14 @@ jobs:
             startsWith(github.base_ref, 'release/') && 'release'
           )
         }}
+
     steps:
+      - name: ref
+        run: echo ${{ github.ref }}
+
+      - name: base_ref
+        run: echo ${{ github.base_ref }}
+
       - name: Health check
         run: |
           response=$(curl --silent --write-out "%{http_code}" http://localhost:${{vars.PORT}}/health)
