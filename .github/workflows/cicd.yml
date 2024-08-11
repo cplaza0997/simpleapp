@@ -3,9 +3,16 @@ name: calculator-pl
 
 # What event is going to activate the pipeline.
 on:
+  pull_request:
+    branches:
+      - master
+      - develop
+      - release
   push:
     branches:
-      - master  
+      - master
+      - develop
+      - release  
   
 # Here we define the tasks that we need github does when the event is activated.
 jobs:
@@ -52,9 +59,16 @@ jobs:
     needs: build_docker_image
     environment:
       name: ${{ 
-        github.ref == 'refs/heads/master' && 'production' ||
-        github.ref == 'refs/heads/develop' && 'develop' ||
-        startsWith(github.ref, 'refs/heads/release/') && 'release'
+          github.event_name == 'push' && (
+            github.ref == 'refs/heads/master' && 'production' ||
+            github.ref == 'refs/heads/develop' && 'develop' ||
+            startsWith(github.ref, 'refs/heads/release/') && 'release'
+          ) ||
+          github.event_name == 'pull_request' && (
+            github.base_ref == 'master' && 'production' ||
+            github.base_ref == 'develop' && 'develop' ||
+            startsWith(github.base_ref, 'release/') && 'release'
+          )
         }}
     
     steps:
@@ -72,11 +86,25 @@ jobs:
     needs: deploy_app
     environment:
       name: ${{ 
-        github.ref == 'refs/heads/master' && 'production' ||
-        github.ref == 'refs/heads/develop' && 'develop' ||
-        startsWith(github.ref, 'refs/heads/release/') && 'release'
+          github.event_name == 'push' && (
+            github.ref == 'refs/heads/master' && 'production' ||
+            github.ref == 'refs/heads/develop' && 'develop' ||
+            startsWith(github.ref, 'refs/heads/release/') && 'release'
+          ) ||
+          github.event_name == 'pull_request' && (
+            github.base_ref == 'master' && 'production' ||
+            github.base_ref == 'develop' && 'develop' ||
+            startsWith(github.base_ref, 'release/') && 'release'
+          )
         }}
+
     steps:
+      - name: ref
+        run: echo ${{ github.ref }}
+
+      - name: base_ref
+        run: echo ${{ github.base_ref }}
+
       - name: Health check
         run: |
           response=$(curl --silent --write-out "%{http_code}" http://localhost:${{vars.PORT}}/health)
